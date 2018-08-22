@@ -26,9 +26,9 @@ class TaskController extends Controller
             $user = $this->validateSession();
 
             if ($user->role_id === Role::ROLE_USER) {
-                $tasks = Task::where('assign', $user->id)->paginate(10);
+                $tasks = Task::where('assign', $user->id)->with('user','assign')->paginate(10);
             } else {
-                $tasks = Task::paginate(10);
+                $tasks = Task::with('user','assign')->paginate(10);
             }
 
             return $this->returnSuccess($tasks);
