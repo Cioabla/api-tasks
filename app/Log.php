@@ -11,6 +11,11 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Log extends Model
 {
+
+    const TYPE_STATUS = 0;
+
+    /** @var int */
+    const TYPE_ASSIGNED = 1;
     /**
      * The attributes that are mass assignable.
      *

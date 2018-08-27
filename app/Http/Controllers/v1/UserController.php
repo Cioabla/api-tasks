@@ -191,6 +191,17 @@ class UserController extends Controller
         }
     }
 
+    public function getAllUsersName()
+    {
+        try {
+            $users = User::all('id','name');
+
+            return $this->returnSuccess($users);
+        } catch (\Exception $e) {
+            return $this->returnError($e->getMessage());
+        }
+    }
+
     /**
      * Update logged user
      *

@@ -35,6 +35,8 @@ $router->group(['namespace' => API_VERSION, 'prefix' => API_VERSION, 'middleware
 
 /** Routes with auth */
 $router->group(['namespace' => API_VERSION, 'prefix' => API_VERSION, 'middleware' => 'cors|jwt'], function () use ($router) {
+
+    $router->get('/users', ['uses' => 'UserController@getAllUsersName']);
     $router->group(['prefix' => 'user'], function () use ($router) {
         $router->get('/', ['uses' => 'UserController@get']);
         $router->patch('/', ['uses' => 'UserController@update']);
@@ -57,10 +59,21 @@ $router->group(['namespace' => API_VERSION, 'prefix' => API_VERSION, 'middleware
         });
     });
 
-    $router->get('/tasks', ['uses' => 'TaskController@getAll']);
+
+    $router->group(['prefix' => 'tasks'], function () use ($router) {
+        $router->get('/', ['uses' => 'TaskController@getAll']);
+        $router->get('/user-tasks', ['uses' => 'TaskController@getAllUserTasks']);
+        $router->get('/user-assigned-tasks', ['uses' => 'TaskController@getAllUserAssignedTasks']);
+        $router->get('/user-in-progress-tasks', ['uses' => 'TaskController@getAllUserInProgressTasks']);
+    });
     $router->group(['prefix' => 'task'], function () use ($router) {
         $router->post('/', ['uses' => 'TaskController@create']);
         $router->patch('/{id}', ['uses' => 'TaskController@update']);
         $router->delete('/{id}', ['uses' => 'TaskController@delete']);
     });
+
+    $router->group(['prefix' => 'logs'], function () use ($router) {
+        $router->get('/', ['uses' => 'LogController@getAll']);
+    });
+
 });

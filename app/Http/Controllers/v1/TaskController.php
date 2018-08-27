@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\v1;
 
 use App\Http\Controllers\Controller;
+use App\Log;
 use App\Role;
 use App\Task;
+use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -15,6 +17,15 @@ use Illuminate\Support\Facades\Validator;
  */
 class TaskController extends Controller
 {
+
+    protected $assign_old_value;
+
+    protected $assign_new_value;
+
+    protected $status_old_value;
+
+    protected $status_new_value;
+
     /**
      * Get tasks list
      *
@@ -26,10 +37,49 @@ class TaskController extends Controller
             $user = $this->validateSession();
 
             if ($user->role_id === Role::ROLE_USER) {
-                $tasks = Task::where('assign', $user->id)->with('user','assign')->paginate(10);
+                $tasks = Task::where('assign', $user->id)->with('user','assign')->paginate(5);
             } else {
-                $tasks = Task::with('user','assign')->paginate(10);
+                $tasks = Task::with('user','assign')->paginate(5);
             }
+
+            return $this->returnSuccess($tasks);
+        } catch (\Exception $e) {
+            return $this->returnError($e->getMessage());
+        }
+    }
+
+    public function getAllUserAssignedTasks()
+    {
+        try {
+            $user = $this->validateSession();
+
+            $tasks = Task::where('assign' , $user->id)->where('status',Task::STATUS_ASSIGNED)->with('user','assign')->paginate(5);
+
+            return $this->returnSuccess($tasks);
+        } catch (\Exception $e) {
+            return $this->returnError($e->getMessage());
+        }
+    }
+
+    public function getAllUserInProgressTasks()
+    {
+        try {
+            $user = $this->validateSession();
+
+            $tasks = Task::where('assign' , $user->id)->where('status','>',Task::STATUS_ASSIGNED)->where('status','<',Task::STATUS_DONE)->with('user','assign')->paginate(5);
+
+            return $this->returnSuccess($tasks);
+        } catch (\Exception $e) {
+            return $this->returnError($e->getMessage());
+        }
+    }
+
+    public function getAllUserTasks()
+    {
+        try {
+            $user = $this->validateSession();
+
+            $tasks = Task::where('assign' , $user->id)->with('user','assign')->paginate(5);
 
             return $this->returnSuccess($tasks);
         } catch (\Exception $e) {
@@ -105,20 +155,54 @@ class TaskController extends Controller
             }
 
             if ($request->has('status')) {
+                $this->status_old_value = $this->statusName($task->status);
+                $this->status_new_value = $this->statusName($request->status);
                 $task->status = $request->status;
             }
 
             if ($request->has('assign')) {
+                $user2 = User::where('id',$task->assign)->first();
+                if(! $user2)
+                {
+                    $this->assign_old_value = 'Unknown';
+                }else {
+                    $this->assign_old_value = $user2->name;
+                }
+                $user2 = User::where('id',$request->assign)->first();
+                $this->assign_new_value = $user2->name;
                 $task->assign = $request->assign;
             }
 
             $task->save();
+
+            if($this->assign_new_value!= $this->assign_old_value)
+            {
+                Log::create([
+                    'task_id' => $task->id,
+                    'user_id' => $user->id,
+                    'type' => Log::TYPE_ASSIGNED,
+                    'old_value' => $this->assign_old_value,
+                    'new_value' => $this->assign_new_value
+                ]);
+            }
+
+            if($this->status_old_value != $this->status_new_value)
+            {
+                Log::create([
+                    'task_id' => $task->id,
+                    'user_id' => $user->id,
+                    'type' => Log::TYPE_STATUS,
+                    'old_value' => $this->status_old_value,
+                    'new_value' => $this->status_new_value
+                ]);
+            }
 
             return $this->returnSuccess();
         } catch (\Exception $e) {
             return $this->returnError($e->getMessage());
         }
     }
+
 
     /**
      * Delete a task

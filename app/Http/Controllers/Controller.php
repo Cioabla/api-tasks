@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Task;
 use App\User;
 use GenTux\Jwt\Drivers\FirebaseDriver;
 use GenTux\Jwt\GetsJwtToken;
@@ -146,6 +147,23 @@ class Controller extends BaseController
         $this->data = $data;
 
         return $this->returnResponse();
+    }
+
+    public function statusName($status)
+    {
+        switch ($status)
+        {
+            case Task::STATUS_ASSIGNED:
+                return 'Assigned';
+            case Task::STATUS_IN_PROGRESS:
+                return 'In progress';
+            case Task::STATUS_NOT_DONE:
+                return 'Not done';
+            case Task::STATUS_DONE:
+                return 'Done';
+            default:
+                return 'Unknown';
+        }
     }
 
     /**
