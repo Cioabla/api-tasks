@@ -81,4 +81,12 @@ $router->group(['namespace' => API_VERSION, 'prefix' => API_VERSION, 'middleware
         $router->delete('/{id  }', ['uses' => 'NotificationController@delete']);
     });
 
+    $router->group(['prefix' => 'group'], function () use ($router) {
+        $router->get('/', ['uses' => 'GroupController@get']);
+        $router->post('/', ['uses' => 'GroupController@create']);
+        $router->patch('/{id}', ['uses' => 'GroupController@update']);
+        $router->delete('/{id}', ['uses' => 'GroupController@delete']);
+        $router->put('/{id}', ['uses' => 'GroupController@addMember']);
+        $router->delete('/{id}/member', ['uses' => 'GroupController@deleteMember']);
+    });
 });
