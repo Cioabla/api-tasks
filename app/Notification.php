@@ -18,7 +18,8 @@ class Notification extends Model
      */
     protected $fillable = [
         'user_id',
-        'message'
+        'message',
+        'task_id'
     ];
 
     /**
@@ -37,5 +38,10 @@ class Notification extends Model
     public function user()
     {
         return $this->belongsTo('App\User');
+    }
+
+    public function task()
+    {
+        return $this->belongsTo('App\Task');
     }
 }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\v1;
 
 use App\Http\Controllers\Controller;
 use App\Log;
+use App\Notification;
 use App\Role;
 use App\Task;
 use App\User;
@@ -121,6 +122,14 @@ class TaskController extends Controller
 
             $task->save();
 
+            $notification = new Notification();
+
+            $notification->user_id = $request->assign;
+            $notification->task_id = $task->id;
+            $notification->message = 'The '. $task->name .' task has been assigned to you';
+
+            $notification->save();
+
             return $this->returnSuccess();
         } catch (\Exception $e) {
             return $this->returnError($e->getMessage());
@@ -175,14 +184,22 @@ class TaskController extends Controller
 
             $task->save();
 
+
             if($this->assign_new_value!= $this->assign_old_value)
             {
+
                 Log::create([
                     'task_id' => $task->id,
                     'user_id' => $user->id,
                     'type' => Log::TYPE_ASSIGNED,
                     'old_value' => $this->assign_old_value,
                     'new_value' => $this->assign_new_value
+                ]);
+
+                Notification::create([
+                    'user_id' => $task->assign,
+                    'task_id' => $task->id,
+                    'message' => 'The '. $task->name .' task has been assigned to you'
                 ]);
             }
 

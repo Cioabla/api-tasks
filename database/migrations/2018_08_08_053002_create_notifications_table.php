@@ -20,6 +20,7 @@ class CreateNotificationsTable extends Migration
             $table->increments('id');
             $table->timestamps();
             $table->integer('user_id');
+            $table->integer('task_id');
             $table->string('message');
         });
     }

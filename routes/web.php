@@ -76,4 +76,9 @@ $router->group(['namespace' => API_VERSION, 'prefix' => API_VERSION, 'middleware
         $router->get('/', ['uses' => 'LogController@getAll']);
     });
 
+    $router->group(['prefix' => 'notification'], function () use ($router) {
+        $router->get('/', ['uses' => 'NotificationController@userNotification']);
+        $router->delete('/{id  }', ['uses' => 'NotificationController@delete']);
+    });
+
 });
